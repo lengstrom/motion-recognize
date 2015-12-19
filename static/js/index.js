@@ -4,7 +4,9 @@ function main() {
   var deviceOrientationPromise = FULLTILT.getDeviceOrientation({'type': 'game'});
   var deviceMotionPromise = FULLTILT.getDeviceMotion({'type': 'game'});
   var deviceOrientation;
-  var fps = 30;
+  var deviceAcceleration;
+  var deviceRotationRate;
+  var fps = 10;
 
   var display = document.getElementById('display');
 
@@ -17,7 +19,8 @@ function main() {
   });
 
   deviceMotionPromise.then(function(controller) {
-    deviceMotion = controller.getScreenAdjustedAcceleration;
+    deviceAcceleration = controller.getScreenAdjustedAcceleration();
+    deviceRotationRate = controller.getScreenAdjustedRotationRate();
   })
   .catch(function(message) {
     display.innerHTML = message;
@@ -26,8 +29,9 @@ function main() {
 
 
   function displayPosition() {
-    if (deviceOrientation && deviceMotion) {
+    if (deviceOrientation) {
       display.innerHTML = '<p>ALPHA: '+round(deviceOrientation.alpha, 5)+',</p><p>BETA: '+round(deviceOrientation.beta, 5)+',</p><p>GAMMA: '+round(deviceOrientation.gamma, 5)+'</p>';
+      // console.log(deviceOrientation, deviceAcceleration, deviceRotationRate);
     }
   }
 
@@ -37,6 +41,14 @@ function main() {
 
   function sendPosition() {
     displayPosition();
+    var obj = {
+      orientation: deviceOrientation,
+      acceleration: deviceAcceleration,
+      rotationRate: deviceRotationRate
+    };
+    var data = JSON.stringify(obj);
+    console.log(data);
+    post('/', data);
 
     setTimeout(function() {
       window.requestAnimationFrame(sendPosition);
